@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSE 调试页 — 学生就业帮助系统</title>
+  <!-- 独立调试页，不进导航（PRD 8.3）；复用生产 core 组件：调试通过 = 生产可用 -->
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    .debug-wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 60px; }
+    .debug-wrap h1 { font-size: 20px; margin-bottom: 4px; }
+    .debug-tip { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+    .debug-section { margin-bottom: 28px; }
+    .debug-section > h2 { font-size: 16px; margin-bottom: 12px; }
+    .debug-row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+    .debug-col { flex: 1; min-width: 300px; }
+    .debug-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .debug-controls label { font-size: 13px; color: #374151; display: flex; align-items: center; gap: 4px; }
+    .event-log {
+      max-height: 220px; overflow: auto; background: #0f172a; color: #93c5fd;
+      font: 12px/1.6 Consolas, monospace; padding: 12px; border-radius: 10px; white-space: pre-wrap;
+    }
+    .status-ok { color: #047857; font-size: 13px; }
+    .chat-input-row { display: flex; gap: 10px; margin-top: 10px; }
+    .chat-input-row input { flex: 1; }
+    .debug-field { margin-bottom: 10px; }
+    .debug-field label { display: block; font-size: 13px; color: #374151; margin-bottom: 4px; }
+    .cid-show { font: 12px Consolas, monospace; color: #6b7280; margin-top: 8px; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">SSE 调试页</span>
+    <a href="index.html" style="color:#fff;font-size:14px;">返回首页</a>
+  </nav>
+
+  <div class="debug-wrap">
+    <h1>前端 SSE 调试台</h1>
+    <p class="debug-tip">
+      区 A/B 为纯前端模拟：事件块经与生产 <b>完全相同</b> 的 <code>core/sse.js</code> 解析器（缓冲拼接）分发。
+      勾选"模拟 TCP 拆包"会把每个事件随机切成两半传输，用于验证半个 JSON 不会导致解析崩溃。
+      区 C 直连 <code>MOCK_COZE=true</code> 的后端（需先登录拿到 token）。
+    </p>
+
+    <!-- ===== 区 A：工作流模拟 ===== -->
+    <section class="debug-section card">
+      <h2>区 A · 工作流事件流模拟（delta* → done {}）</h2>
+      <div class="debug-controls">
+        <button id="a-start" type="button" class="btn">开始模拟</button>
+        <button id="a-reset" type="button" class="btn btn-ghost">重置</button>
+        <label><input type="checkbox" id="a-split"> 模拟 TCP 拆包（半个事件/半个 JSON）</label>
+        <span id="a-status"></span>
+      </div>
+      <div class="debug-row">
+        <div class="debug-col report-panel" id="a-output"><span style="color:#9ca3af;">等待输出…</span></div>
+        <div class="debug-col"><div class="event-log" id="a-log">（原始事件日志）</div></div>
+      </div>
+    </section>
+
+    <!-- ===== 区 B：Bot 聊天模拟 ===== -->
+    <section class="debug-section card">
+      <h2>区 B · Bot 聊天模拟（delta* → done {conversation_id}）</h2>
+      <div class="chat-list" id="b-list" style="max-height:320px;"></div>
+      <div class="chat-input-row">
+        <input id="b-input" type="text" placeholder="输入面试回答…（内置三轮模拟应答）">
+        <button id="b-send" type="button" class="btn">发送</button>
+      </div>
+      <div class="cid-show">conversation_id（多轮策略 A）：<span id="b-cid">（尚未生成）</span></div>
+    </section>
+
+    <!-- ===== 区 C：真实后端联调 ===== -->
+    <section class="debug-section card">
+      <h2>区 C · 真实后端联调（MOCK_COZE=true）</h2>
+      <div class="debug-field">
+        <label>服务地址（留空 = 本页同源；跨域需后端 CORS，已全开）</label>
+        <input id="c-base" type="text" placeholder="例如 http://127.0.0.1:8000">
+      </div>
+      <div class="debug-field">
+        <label>Token（登录后自动存于本地；跨端口调试时点"写入本地"）</label>
+        <div style="display:flex;gap:10px;">
+          <input id="c-token" type="text" placeholder="localStorage 的 token">
+          <button id="c-save-token" type="button" class="btn btn-ghost">写入本地</button>
+        </div>
+      </div>
+
+      <div class="debug-row" style="margin-top:12px;">
+        <div class="debug-col">
+          <h3 style="font-size:14px;margin-bottom:8px;">① 面试题生成（工作流 SSE）</h3>
+          <textarea id="c-resume" rows="3" placeholder="粘贴简历文本…">三年 Python 经验，做过 FastAPI 项目</textarea>
+          <button id="c-questions" type="button" class="btn" style="margin-top:8px;">生成（/api/questions/generate）</button>
+          <div class="report-panel" id="c-questions-out" style="margin-top:10px;min-height:120px;">
+            <span style="color:#9ca3af;">等待输出…</span>
+          </div>
+        </div>
+        <div class="debug-col">
+          <h3 style="font-size:14px;margin-bottom:8px;">② 模拟面试（Bot SSE）</h3>
+          <div class="chat-list" id="c-list" style="max-height:220px;"></div>
+          <div class="chat-input-row">
+            <input id="c-msg" type="text" placeholder="发消息给面试官 Bot…">
+            <button id="c-chat" type="button" class="btn">发送</button>
+          </div>
+          <div class="cid-show">conversation_id：<span id="c-cid">（尚未生成）</span></div>
+        </div>
+      </div>
+      <div class="event-log" id="c-log" style="margin-top:12px;">（原始事件日志，逐块核对技能协议）</div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { createSSEParser, streamSSE } from "./js/core/sse.js";
+    import { appendChatMessage, renderMarkdownStream, renderMarkdown, escapeHtml, $ } from "./js/core/ui.js";
+    import { showToast } from "./js/core/toast.js";
+    import { tokenStore } from "./js/core/api.js";
+
+    // 把 JS 对象包装成一条 SSE 事件文本（与后端 _sse() 逐字同构）
+    const sse = (event, data) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+
+    // 模拟流：按定时器把若干"字节块"喂给生产解析器；拆包模式再把每块随机切成两半
+    function feedSimulated(chunks, parser, { interval = 120, split = false, onFinished } = {}) {
+      let i = 0;
+      const timer = setInterval(() => {
+        if (i >= chunks.length) {
+          clearInterval(timer);
+          parser.end();
+          onFinished?.();
+          return;
+        }
+        let chunk = chunks[i++];
+        if (split && chunk.length > 4) {
+          const cut = 1 + Math.floor(Math.random() * (chunk.length - 2));
+          parser.push(chunk.slice(0, cut));
+          parser.push(chunk.slice(cut)); // 半个事件/半个 JSON → 验证缓冲拼接
+        } else {
+          parser.push(chunk);
+        }
+      }, interval);
+      return () => clearInterval(timer);
+    }
+
+    const logTo = (el) => (block) => {
+      el.textContent += block + "\n----\n";
+      el.scrollTop = el.scrollHeight;
+    };
+
+    // ---------- 区 A：工作流模拟 ----------
+    const FAKE_REPORT = [
+      "## 匹配度打分\n\n**82 / 100** —— 整体匹配度较高。\n\n",
+      "## 核心优势\n\n- 技术栈对口\n- 有完整项目落地\n\n",
+      "## 存在的不足\n\n| 维度 | 现状 | 建议 |\n|---|---|---|\n| 量化 | 无数据 | 补 QPS/用户量 |\n| 关键词 | 缺 Docker | 对照 JD 补齐 |\n\n",
+      "## 修改建议\n\n1. 成果数字化\n2. 技能按 JD 重排\n3. 项目改 STAR 结构\n",
+    ];
+    let stopA = null;
+    $("#a-start").addEventListener("click", () => {
+      stopA?.();
+      $("#a-output").innerHTML = "";
+      $("#a-log").textContent = "";
+      $("#a-status").textContent = "接收中…";
+      $("#a-status").className = "";
+      const acc = [];
+      const parser = createSSEParser({
+        onDelta: (t) => { acc.push(t); $("#a-output").innerHTML = renderMarkdown(acc.join("")); },
+        onDone: () => { $("#a-status").textContent = "✓ 已完成（done 收到，data={}）"; $("#a-status").className = "status-ok"; },
+        onError: (m) => showToast(m, 2500),
+        onRaw: logTo($("#a-log")),
+      });
+      // 字节块 = 逐条完整事件（拆包模式下再被随机切碎）
+      const chunks = FAKE_REPORT.map((t) => sse("delta", { text: t }));
+      chunks.push(sse("done", {}));
+      stopA = feedSimulated(chunks, parser, { split: $("#a-split").checked });
+    });
+    $("#a-reset").addEventListener("click", () => {
+      stopA?.();
+      $("#a-output").innerHTML = '<span style="color:#9ca3af;">等待输出…</span>';
+      $("#a-log").textContent = "";
+      $("#a-status").textContent = "";
+    });
+
+    // ---------- 区 B：Bot 聊天模拟 ----------
+    const B_ANSWERS = [
+      "好的，我已了解你的背景。\n\n**第一题**：请介绍简历中最能代表你技术水平的项目，并说明技术选型理由。\n\n（考察点：项目真实性、技术深度）",
+      "不错，选型理由清晰。\n\n**追问**：这个项目的接口平均响应时间是多少？你是如何压测的？",
+      "回答完毕。本轮面试结束。\n\n**总评**：表达结构良好，建议补充量化数据。期待你的下一轮练习！",
+    ];
+    let bRound = 0;
+    let stopB = null;
+    $("#b-send").addEventListener("click", () => {
+      const text = $("#b-input").value.trim();
+      if (!text) return showToast("请输入内容", 1500);
+      if (stopB) return showToast("上一轮还在模拟中…", 1500);
+      $("#b-input").value = "";
+      appendChatMessage($("#b-list"), "user", text);
+      const bubble = appendChatMessage($("#b-list"), "ai", "", { streaming: true });
+      const acc = [];
+      const parser = createSSEParser({
+        onDelta: (t) => { acc.push(t); renderMarkdownStream(bubble, acc.join("")); },
+        onDone: (d) => {
+          $("#b-cid").textContent = d.conversation_id || "（无）";
+          showToast("本轮完成", 1200);
+        },
+        onError: (m) => showToast(m, 2500),
+      });
+      // 答案文本按句拆成多条 delta 更接近真实流；再追加 done{conversation_id}
+      const answer = B_ANSWERS[bRound % B_ANSWERS.length];
+      const chunks = answer.split("。").filter(Boolean)
+        .map((seg, i, arr) => sse("delta", { text: seg + (i < arr.length - 1 ? "。" : "") }));
+      chunks.push(sse("done", { conversation_id: `mock-conv-debug-${String(bRound + 1).padStart(2, "0")}` }));
+      bRound += 1;
+      stopB = feedSimulated(chunks, parser, { interval: 150, split: $("#a-split").checked, onFinished: () => (stopB = null) });
+    });
+
+    // ---------- 区 C：真实后端联调 ----------
+    $("#c-token").value = tokenStore.get() || "";
+    $("#c-save-token").addEventListener("click", () => {
+      tokenStore.set($("#c-token").value.trim());
+      showToast("已写入本地 token", 1500);
+    });
+    const base = () => $("#c-base").value.trim().replace(/\/+$/, "");
+
+    $("#c-questions").addEventListener("click", () => {
+      const out = $("#c-questions-out");
+      out.innerHTML = "";
+      const acc = [];
+      streamSSE(base() + "/api/questions/generate", { resume_text: $("#c-resume").value }, {
+        onDelta: (t) => { acc.push(t); out.innerHTML = renderMarkdown(acc.join("")); },
+        onDone: () => showToast("生成完成（done）", 1500),
+        onError: (m) => showToast(m, 2500),
+        onRaw: logTo($("#c-log")),
+      });
+    });
+
+    $("#c-chat").addEventListener("click", () => {
+      const text = $("#c-msg").value.trim();
+      if (!text) return showToast("请输入内容", 1500);
+      $("#c-msg").value = "";
+      appendChatMessage($("#c-list"), "user", text);
+      const bubble = appendChatMessage($("#c-list"), "ai", "", { streaming: true });
+      const acc = [];
+      streamSSE(base() + "/api/interview/chat", { message: text, conversation_id: $("#c-cid").textContent.startsWith("（") ? "" : $("#c-cid").textContent }, {
+        onDelta: (t) => { acc.push(t); renderMarkdownStream(bubble, acc.join("")); },
+        onDone: (d) => { $("#c-cid").textContent = d.conversation_id || "（无）"; },
+        onError: (m) => showToast(m, 2500),
+        onRaw: logTo($("#c-log")),
+      });
+    });
+  </script>
+</body>
+</html>

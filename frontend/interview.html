@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>模拟面试 - 学生就业帮助系统</title>
+  <script>
+    // 路由守卫（同步脚本，先于 DOM 渲染执行）：未登录立即替换为登录页，页面内容不会闪现
+    if (!localStorage.getItem("token")) {
+      window.location.replace("login.html");
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a class="nav-title" href="index.html">学生就业帮助系统</a>
+      <div class="avatar-wrap">
+        <div id="avatar" class="avatar" title="账号菜单">?</div>
+        <div id="dropdown" class="dropdown">
+          <a href="index.html">返回首页</a>
+          <a href="profile.html">用户信息</a>
+          <a href="#" id="menu-logout">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page page-wide">
+    <h2 class="page-title">模拟面试</h2>
+
+    <div class="interview-layout">
+      <!-- 左：知识库管理 -->
+      <aside class="kb-panel card card-sm">
+        <h3 style="font-size: 15px; margin-bottom: 12px;">知识库</h3>
+
+        <div class="kb-slot">
+          <div class="kb-head">
+            <span>简历</span>
+            <span id="resume-badge" class="sync-badge">未上传</span>
+          </div>
+          <p id="resume-name" class="kb-file">未绑定文件（.doc / .docx）</p>
+          <div class="kb-actions">
+            <input id="resume-file" type="file" accept=".doc,.docx" hidden>
+            <button id="resume-upload" type="button" class="btn btn-sm">上传 / 更新</button>
+            <button id="resume-remove" type="button" class="btn btn-sm btn-ghost">解除绑定</button>
+          </div>
+        </div>
+
+        <div class="kb-slot">
+          <div class="kb-head">
+            <span>面试题</span>
+            <span id="questions-badge" class="sync-badge">未上传</span>
+          </div>
+          <p id="questions-name" class="kb-file">未绑定文件（.md）</p>
+          <div class="kb-actions">
+            <input id="questions-file" type="file" accept=".md" hidden>
+            <button id="questions-upload" type="button" class="btn btn-sm">上传 / 更新</button>
+            <button id="questions-remove" type="button" class="btn btn-sm btn-ghost">解除绑定</button>
+          </div>
+        </div>
+
+        <p class="hint">上传后自动执行「删旧 → 传新 → 绑定 Bot」闭环，状态实时更新。</p>
+      </aside>
+
+      <!-- 右：聊天区 -->
+      <section class="chat-panel card card-sm">
+        <div class="chat-head">
+          <h3>面试对话</h3>
+          <button id="chat-clear" type="button" class="btn btn-sm btn-ghost">清空聊天记录</button>
+        </div>
+
+        <div id="kb-tip" class="kb-tip hide">
+          提示：尚未绑定知识库，面试官暂时无法参考你的简历与题目。请先在左侧上传。
+        </div>
+
+        <div id="chat-list" class="chat-list"></div>
+
+        <div class="chat-input-row">
+          <input id="chat-input" type="text" placeholder="输入你的回答，按 Enter 发送…">
+          <button id="chat-send" type="button" class="btn">发送</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/pages/interview.js"></script>
+</body>
+</html>

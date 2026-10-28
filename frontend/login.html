@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 学生就业帮助系统</title>
+  <script>
+    // 已登录访问登录页 → 直接替换回首页（同步脚本，先于 DOM 渲染执行）
+    if (localStorage.getItem("token")) {
+      window.location.replace("index.html");
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="card auth-card">
+      <h1>学生就业帮助系统</h1>
+      <p class="auth-sub">登录后开启你的求职之旅</p>
+
+      <form id="login-form">
+        <div class="field">
+          <label for="username">用户名</label>
+          <input id="username" type="text" required autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="password">密码</label>
+          <input id="password" type="password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn">登 录</button>
+        <p id="login-msg" class="msg"></p>
+      </form>
+
+      <div class="form-links">
+        <a href="register.html">没有账号？去注册</a>
+        <a href="forgot.html">忘记密码？</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

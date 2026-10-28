@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页 - 学生就业帮助系统</title>
+  <script>
+    // 路由守卫（同步脚本，先于 DOM 渲染执行）：未登录立即替换为登录页，页面内容不会闪现
+    if (!localStorage.getItem("token")) {
+      window.location.replace("login.html");
+    }
+  </script>
+  <!-- marked.js：后续阶段渲染 AI 返回的 Markdown 内容（流式回复） -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a class="nav-title" href="index.html">学生就业帮助系统</a>
+      <div class="avatar-wrap">
+        <div id="avatar" class="avatar" title="账号菜单">?</div>
+        <div id="dropdown" class="dropdown">
+          <a href="profile.html">用户信息</a>
+          <a href="#" id="menu-logout">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page">
+    <h2 id="welcome">你好！</h2>
+    <p id="profile-hint" class="hint"></p>
+
+    <div class="feature-grid">
+      <a class="card feature-card" href="resume.html">
+        <h3>📄 简历评估</h3>
+        <p>上传简历文件，AI 从匹配度、优势、不足、修改建议四方面给出评估报告。</p>
+        <span class="badge">立即使用</span>
+      </a>
+      <a class="card feature-card" href="audio.html">
+        <h3>🎙️ 录音分析</h3>
+        <p>上传自我介绍录音，AI 评估语速、清晰度、逻辑连贯性并给出改进建议。</p>
+        <span class="badge">立即使用</span>
+      </a>
+      <a class="card feature-card" href="questions.html">
+        <h3>📝 面试题生成</h3>
+        <p>粘贴或上传修改后的简历，AI 生成至少 5 道面试题，每题附考察点。</p>
+        <span class="badge">立即使用</span>
+      </a>
+      <a class="card feature-card" href="interview.html">
+        <h3>💬 模拟面试</h3>
+        <p>上传简历与面试题构建专属知识库，AI 面试官与你多轮对话陪练。</p>
+        <span class="badge">立即使用</span>
+      </a>
+    </div>
+  </main>
+
+  <!-- 信息不完整提示模态框 -->
+  <div id="profile-modal" class="modal">
+    <div class="modal-box">
+      <h3>温馨提示</h3>
+      <p class="modal-text">请进入用户信息页面录入数据</p>
+      <div class="modal-actions">
+        <button id="modal-close" type="button" class="btn btn-ghost">稍后再说</button>
+        <button id="modal-confirm" type="button" class="btn">确 定</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

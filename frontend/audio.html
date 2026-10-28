@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>录音分析 - 学生就业帮助系统</title>
+  <script>
+    // 路由守卫（同步脚本，先于 DOM 渲染执行）：未登录立即替换为登录页，页面内容不会闪现
+    if (!localStorage.getItem("token")) {
+      window.location.replace("login.html");
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a class="nav-title" href="index.html">学生就业帮助系统</a>
+      <div class="avatar-wrap">
+        <div id="avatar" class="avatar" title="账号菜单">?</div>
+        <div id="dropdown" class="dropdown">
+          <a href="index.html">返回首页</a>
+          <a href="profile.html">用户信息</a>
+          <a href="#" id="menu-logout">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page">
+    <h2 class="page-title">录音分析</h2>
+
+    <div class="card card-sm" style="margin-bottom: 20px;">
+      <div class="upload-row">
+        <input id="file-input" type="file">
+        <span id="file-name">未选择文件</span>
+        <button id="start-btn" type="button" class="btn btn-sm">开始分析</button>
+      </div>
+      <p class="hint">支持 .mp3 / .wav，单文件不超过 20MB。报告含四节：语速评价、清晰度评价、逻辑连贯性分析、改进建议。</p>
+    </div>
+
+    <div class="report-layout">
+      <aside class="history-sidebar card card-sm">
+        <h3 style="font-size: 15px; margin-bottom: 12px;">历史记录</h3>
+        <div id="history-list"></div>
+      </aside>
+      <section id="report-panel" class="report-panel card card-sm">
+        <p style="color: #9ca3af;">上传录音后点击「开始分析」，报告将在此处流式输出。</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/pages/audio.js"></script>
+</body>
+</html>

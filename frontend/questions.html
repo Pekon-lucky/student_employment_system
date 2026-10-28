@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>面试题生成 - 学生就业帮助系统</title>
+  <script>
+    // 路由守卫（同步脚本，先于 DOM 渲染执行）：未登录立即替换为登录页，页面内容不会闪现
+    if (!localStorage.getItem("token")) {
+      window.location.replace("login.html");
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a class="nav-title" href="index.html">学生就业帮助系统</a>
+      <div class="avatar-wrap">
+        <div id="avatar" class="avatar" title="账号菜单">?</div>
+        <div id="dropdown" class="dropdown">
+          <a href="index.html">返回首页</a>
+          <a href="profile.html">用户信息</a>
+          <a href="#" id="menu-logout">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page">
+    <h2 class="page-title">面试题生成</h2>
+
+    <!-- 双入口：粘贴文本优先，其次上传文件 -->
+    <div class="card card-sm" style="margin-bottom: 20px;">
+      <div class="field">
+        <label for="resume-text">方式一：粘贴修改后的简历文本</label>
+        <textarea id="resume-text" rows="6" placeholder="把你的简历内容粘贴到这里（文本方式优先于文件上传）…"></textarea>
+      </div>
+      <div class="upload-row" style="margin-bottom: 8px;">
+        <span style="font-size: 14px;">方式二：上传简历文件</span>
+        <input id="file-input" type="file">
+        <span id="file-name">未选择文件</span>
+      </div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button id="start-btn" type="button" class="btn btn-sm">生成面试题</button>
+      </div>
+      <p class="hint">两种方式二选一。至少生成 5 道题，技术题与行为题混合，每题附「考察点」。</p>
+    </div>
+
+    <div class="report-layout">
+      <aside class="history-sidebar card card-sm">
+        <h3 style="font-size: 15px; margin-bottom: 12px;">历史记录</h3>
+        <div id="history-list"></div>
+      </aside>
+      <section id="report-panel" class="report-panel card card-sm">
+        <p style="color: #9ca3af;">输入简历后点击「生成面试题」，题目将在此处流式输出。</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/pages/questions.js"></script>
+</body>
+</html>

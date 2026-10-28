@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>忘记密码 - 学生就业帮助系统</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="card auth-card">
+      <h1>找回密码</h1>
+      <p class="auth-sub">通过用户名 + 注册时的身份证号验证身份</p>
+
+      <form id="forgot-form">
+        <div class="field">
+          <label for="username">用户名</label>
+          <input id="username" type="text" required autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="id_card">身份证号</label>
+          <input id="id_card" type="text" maxlength="18" required>
+        </div>
+        <div class="field">
+          <label for="new_password">新密码（至少 6 位）</label>
+          <input id="new_password" type="password" minlength="6" required autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label for="new_password2">确认新密码</label>
+          <input id="new_password2" type="password" minlength="6" required autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn">重置密码</button>
+        <p id="forgot-msg" class="msg"></p>
+      </form>
+
+      <div class="form-links">
+        <a href="login.html">返回登录</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

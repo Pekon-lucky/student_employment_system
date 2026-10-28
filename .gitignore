@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# 环境与数据（不入库）
+.env
+app.db
+
+# 用户上传的简历 / 录音等隐私文件（保留目录占位）
+test_files/docs/*
+!test_files/docs/.gitkeep
+test_files/audio/*
+!test_files/audio/.gitkeep
+
+# 系统文件
+.DS_Store
+Thumbs.db
